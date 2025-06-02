@@ -1,7 +1,7 @@
 from textnode import TextNode,TextType
 import re
 from block_process import block_to_block_type,BlockType
-from htmlnode import ParentNode,text_node_to_html_node
+from htmlnode import ParentNode,text_node_to_html_node,LeafNode
 
 
 
@@ -108,6 +108,27 @@ def markdown_to_html_node(markdown):
                 level = block.count("#", 0, block.find(" "))
                 content = block[level+1:].strip()
                 children.append(ParentNode(f"h{level}", text_to_children(content)))
+            
+            case BlockType.CODE:
+                code_content = block.strip("`").strip()
+                tn = TextNode(code_content, TextType.TEXT)
+                children.append(ParentNode("pre", [LeafNode("code", tn.text)]))
+            
+            case BlockType.QUOTE:
+                quote_text = "\n".join([line[2:] for line in block.splitlines()])
+                children.append(ParentNode("blockquote", text_to_children(quote_text)))
+
+            case BlockType.UNORDERED_LIST:
+                lines = block.splitlines()
+                items = [ParentNode("li", text_to_children(line[2:])) for line in lines]
+                children.append(ParentNode("ul", items))
+
+            case BlockType.ORDERED_LIST:
+                lines = block.splitlines()
+                items = [ParentNode("li", text_to_children(line[line.find('.')+2:])) for line in lines]
+                children.append(ParentNode("ol", items))
+
+    return ParentNode("div", children)
     
     
 
