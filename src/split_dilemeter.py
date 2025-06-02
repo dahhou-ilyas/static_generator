@@ -1,10 +1,13 @@
 from textnode import TextNode,TextType
 import re
+from block_process import block_to_block_type,BlockType
+from htmlnode import ParentNode,text_node_to_html_node
+
+
 
 def split_nodes_delimiter(old_nodes, delimiter, text_type):
     result = []
     for node in old_nodes:
-        # On ne modifie que les TextNode de type TEXT
         if node.text_type != TextType.TEXT:
             result.append(node)
             continue
@@ -91,6 +94,28 @@ def text_to_textnodes(text):
 def markdown_to_blocks(markdown):
     return [block.strip() for block in markdown.split("\n\n") if block.strip()]
 
+def markdown_to_html_node(markdown):
+    blocks = markdown_to_blocks(markdown)
+    children = []
+
+    for block in blocks:
+        block_type = block_to_block_type(block)
+        match block_type:
+            case BlockType.PARAGRAPH:
+                children.append(ParentNode("p", text_to_children(block)))
+
+            case BlockType.HEADING:
+                level = block.count("#", 0, block.find(" "))
+                content = block[level+1:].strip()
+                children.append(ParentNode(f"h{level}", text_to_children(content)))
+    
+    
+
+def text_to_children(text):
+    text_nodes = text_to_textnodes(text)
+    return [text_node_to_html_node(node) for node in text_nodes]
+    
+    
 
 """ 
 def extract_inside_outside(text, delimiter):
