@@ -111,8 +111,7 @@ def markdown_to_html_node(markdown):
             
             case BlockType.CODE:
                 code_content = block.strip("`").strip()
-                tn = TextNode(code_content, TextType.TEXT)
-                children.append(ParentNode("pre", [LeafNode("code", tn.text)]))
+                children.append(ParentNode("pre", [LeafNode("code", code_content)]))
             
             case BlockType.QUOTE:
                 quote_text = "\n".join([line[2:] for line in block.splitlines()])

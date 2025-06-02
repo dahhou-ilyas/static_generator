@@ -1,7 +1,8 @@
 import unittest
-from split_dilemeter import extract_markdown_links ,extract_markdown_images,split_nodes_image,split_nodes_link,text_to_textnodes,markdown_to_blocks
+from split_dilemeter import extract_markdown_links ,extract_markdown_images,split_nodes_image,split_nodes_link,text_to_textnodes,markdown_to_blocks,markdown_to_html_node
 from textnode import TextNode,TextType
 from block_process import block_to_block_type,BlockType
+from htmlnode import ParentNode
 
 
 class TestTextNode(unittest.TestCase):
@@ -311,6 +312,32 @@ class TestBlockToBlockType(unittest.TestCase):
 
         # A single line that's just text
         self.assertEqual(block_to_block_type("Just some text."), BlockType.PARAGRAPH)
+
+    
+class TestMarkdownToHtml(unittest.TestCase):
+    def test_heading(self):
+        markdown = "# Heading 1"
+        result = markdown_to_html_node(markdown)
+        self.assertIsInstance(result, ParentNode)
+        self.assertEqual(result.tag, "div")
+        self.assertEqual(len(result.children), 1)
+        self.assertEqual(result.children[0].tag, "h1")
+        self.assertEqual(result.children[0].children[0].value, "Heading 1")
+
+    def test_paragraph(self):
+        markdown = "This is **bold** and _italic_ text."
+        result = markdown_to_html_node(markdown)
+        self.assertEqual(result.tag, "div")
+        paragraph = result.children[0]
+        self.assertEqual(paragraph.tag, "p")
+        self.assertEqual(len(paragraph.children), 5)
+        self.assertEqual(paragraph.children[0].value, "This is ")
+        self.assertEqual(paragraph.children[1].tag, "b")
+        self.assertEqual(paragraph.children[1].value, "bold")
+        self.assertEqual(paragraph.children[2].value, " and ")
+        self.assertEqual(paragraph.children[3].tag, "i")
+        self.assertEqual(paragraph.children[3].value, "italic")
+        self.assertEqual(paragraph.children[4].value, " text.")
 
 
 if __name__ == "__main__":
