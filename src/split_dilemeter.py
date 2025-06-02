@@ -30,6 +30,42 @@ def extract_markdown_links(text):
     return re.findall(r"\[([^\]]+)\]\(([^)]+)\)", text)
 
 
+def split_nodes_image(old_nodes):
+    result = []
+    for node in old_nodes:
+        if node.text_type != TextType.TEXT:
+            result.append(node)
+            continue
+        text = node.text
+        parts = re.split(r"!\[[^\]]+\]\([^)]+\)", text)
+        images = extract_markdown_images(text)
+
+        for i in range(len(parts)):
+            if parts[i]:
+                result.append(TextNode(parts[i], TextType.TEXT))
+            if i < len(images):
+                alt, url = images[i]
+                result.append(TextNode(alt, TextType.IMAGE, url))
+    return result
+
+def split_nodes_link(old_nodes):
+    result = []
+    for node in old_nodes:
+        if node.text_type != TextType.TEXT:
+            result.append(node)
+            continue
+        text = node.text
+        parts = re.split(r"\[[^\]]+\]\([^)]+\)", text)
+        link = extract_markdown_links(text)    
+        for i in range(len(parts)):
+            if parts[i]:
+                result.append(TextNode(parts[i], TextType.TEXT))
+            if i < len(link):
+                info, url = link[i]
+                result.append(TextNode(info,TextType.LINK, url))
+    return result
+
+
 
 """ 
 def extract_inside_outside(text, delimiter):
