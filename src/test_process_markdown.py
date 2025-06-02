@@ -1,5 +1,5 @@
 import unittest
-from split_dilemeter import extract_markdown_links ,extract_markdown_images,split_nodes_image,split_nodes_link
+from split_dilemeter import extract_markdown_links ,extract_markdown_images,split_nodes_image,split_nodes_link,text_to_textnodes
 from textnode import TextNode,TextType
 
 
@@ -149,3 +149,60 @@ class TestTextNode(unittest.TestCase):
         node = TextNode("Should stay the same", TextType.BOLD)
         expected = [node]
         self.assertListEqual(split_nodes_link([node]), expected)
+
+    def test_simple_bold(self):
+        text = "Hello **world**!"
+        result = text_to_textnodes(text)
+        expected = [
+            TextNode("Hello ", TextType.TEXT),
+            TextNode("world", TextType.BOLD),
+            TextNode("!", TextType.TEXT),
+        ]
+        self.assertEqual(result, expected)
+
+    def test_combined_styles(self):
+        text = "This is **bold** and _italic_ and `code`"
+        result = text_to_textnodes(text)
+        expected = [
+            TextNode("This is ", TextType.TEXT),
+            TextNode("bold", TextType.BOLD),
+            TextNode(" and ", TextType.TEXT),
+            TextNode("italic", TextType.ITALIC),
+            TextNode(" and ", TextType.TEXT),
+            TextNode("code", TextType.CODE),
+        ]
+        self.assertEqual(result, expected)
+
+    def test_image_and_link(self):
+        text = "Look at ![cat](http://img.com/cat.jpg) and [GitHub](https://github.com)"
+        result = text_to_textnodes(text)
+        expected = [
+            TextNode("Look at ", TextType.TEXT),
+            TextNode("cat", TextType.IMAGE, "http://img.com/cat.jpg"),
+            TextNode(" and ", TextType.TEXT),
+            TextNode("GitHub", TextType.LINK, "https://github.com"),
+        ]
+        self.assertEqual(result, expected)
+
+    def test_complex_line(self):
+        text = "Start **bold** _italic_ `code` ![img](url) [link](url2)"
+        result = text_to_textnodes(text)
+        expected = [
+            TextNode("Start ", TextType.TEXT),
+            TextNode("bold", TextType.BOLD),
+            TextNode(" ", TextType.TEXT),
+            TextNode("italic", TextType.ITALIC),
+            TextNode(" ", TextType.TEXT),
+            TextNode("code", TextType.CODE),
+            TextNode(" ", TextType.TEXT),
+            TextNode("img", TextType.IMAGE, "url"),
+            TextNode(" ", TextType.TEXT),
+            TextNode("link", TextType.LINK, "url2"),
+        ]
+        self.assertEqual(result, expected)
+
+    def test_no_formatting(self):
+        text = "Just plain text"
+        result = text_to_textnodes(text)
+        expected = [TextNode("Just plain text", TextType.TEXT)]
+        self.assertEqual(result, expected)

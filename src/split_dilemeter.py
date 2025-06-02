@@ -66,6 +66,29 @@ def split_nodes_link(old_nodes):
     return result
 
 
+def text_to_textnodes(text):
+    # Étape 1 : créer un seul TextNode de type TEXT avec tout le texte
+    nodes = [TextNode(text, TextType.TEXT)]
+
+    # Étape 2 : découper selon les images
+    nodes = split_nodes_image(nodes)
+
+    # Étape 3 : découper selon les liens
+    nodes = split_nodes_link(nodes)
+
+    # Étape 4 : découper selon le gras (markdown **)
+    nodes = split_nodes_delimiter(nodes, "**", TextType.BOLD)
+
+    # Étape 5 : découper selon l'italique (_)
+    nodes = split_nodes_delimiter(nodes, "_", TextType.ITALIC)
+
+    # Étape 6 : découper selon les blocs de code (``)
+    nodes = split_nodes_delimiter(nodes, "`", TextType.CODE)
+
+    return nodes
+
+
+
 
 """ 
 def extract_inside_outside(text, delimiter):
