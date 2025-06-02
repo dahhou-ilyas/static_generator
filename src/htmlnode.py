@@ -39,4 +39,21 @@ class LeafNode(HTMLNode):
             return self.value
         
         return f'<{self.tag}{self.props_to_html() if self.props else ""}>{self.value}</{self.tag}>'
+    
+
+
+class ParentNode(HTMLNode):
+    def __init__(self, tag, children, props=None):
+        super().__init__(tag, None, children, props)
+
+    def to_html(self):
+        if self.tag is None:
+            raise ValueError("tag is required for Parrent Node")
+        if self.children is None:
+            raise ValueError("children is required for Parrent Node")
         
+        result = f'<{self.tag}>'
+        for chld in self.children:
+            result = result + chld.to_html()
+        return result+f'</{self.tag}>'
+    
