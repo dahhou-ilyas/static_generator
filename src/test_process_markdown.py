@@ -1,5 +1,5 @@
 import unittest
-from split_dilemeter import extract_markdown_links ,extract_markdown_images,split_nodes_image,split_nodes_link,text_to_textnodes
+from split_dilemeter import extract_markdown_links ,extract_markdown_images,split_nodes_image,split_nodes_link,text_to_textnodes,markdown_to_blocks
 from textnode import TextNode,TextType
 
 
@@ -205,4 +205,61 @@ class TestTextNode(unittest.TestCase):
         text = "Just plain text"
         result = text_to_textnodes(text)
         expected = [TextNode("Just plain text", TextType.TEXT)]
+        self.assertEqual(result, expected)
+
+class TestMarkdownToBlocks(unittest.TestCase):
+
+    def test_heading_paragraph_list(self):
+        markdown = """
+# This is a heading
+
+This is a paragraph of text. It has some **bold** and _italic_ words inside of it.
+
+- This is the first list item in a list block
+- This is a list item
+- This is another list item
+        """.strip()
+
+        expected = [
+            "# This is a heading",
+            "This is a paragraph of text. It has some **bold** and _italic_ words inside of it.",
+            "- This is the first list item in a list block\n- This is a list item\n- This is another list item"
+        ]
+
+        result = markdown_to_blocks(markdown)
+        self.assertEqual(result, expected)
+
+    def test_only_one_paragraph(self):
+        markdown = "Just a simple paragraph with **bold** and `code`."
+        expected = ["Just a simple paragraph with **bold** and `code`."]
+        result = markdown_to_blocks(markdown)
+        self.assertEqual(result, expected)
+
+    def test_blocks_with_extra_whitespace(self):
+        markdown = """
+    
+    First block with spaces.
+    
+    
+
+    Second block with tabs and newlines.
+    
+        """
+        expected = [
+            "First block with spaces.",
+            "Second block with tabs and newlines."
+        ]
+        result = markdown_to_blocks(markdown)
+        self.assertEqual(result, expected)
+
+    def test_empty_string(self):
+        markdown = ""
+        expected = []
+        result = markdown_to_blocks(markdown)
+        self.assertEqual(result, expected)
+
+    def test_all_whitespace(self):
+        markdown = "   \n \n \t  "
+        expected = []
+        result = markdown_to_blocks(markdown)
         self.assertEqual(result, expected)
