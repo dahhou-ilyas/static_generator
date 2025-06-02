@@ -1,6 +1,7 @@
 import unittest
 from split_dilemeter import extract_markdown_links ,extract_markdown_images,split_nodes_image,split_nodes_link,text_to_textnodes,markdown_to_blocks
 from textnode import TextNode,TextType
+from block_process import block_to_block_type,BlockType
 
 
 class TestTextNode(unittest.TestCase):
@@ -263,3 +264,54 @@ This is a paragraph of text. It has some **bold** and _italic_ words inside of i
         expected = []
         result = markdown_to_blocks(markdown)
         self.assertEqual(result, expected)
+
+
+class TestBlockToBlockType(unittest.TestCase):
+
+    def test_heading_blocks(self):
+        self.assertEqual(block_to_block_type("# Heading"), BlockType.HEADING)
+        self.assertEqual(block_to_block_type("### Subheading"), BlockType.HEADING)
+        self.assertNotEqual(block_to_block_type("####### Too many hashes"), BlockType.HEADING)
+
+    def test_code_block(self):
+        block = "```\ndef foo():\n    return 'bar'\n```"
+        self.assertEqual(block_to_block_type(block), BlockType.CODE)
+
+        # Not a code block (missing end backticks)
+        invalid_block = "```\ndef foo():\n    return 'bar'"
+        self.assertNotEqual(block_to_block_type(invalid_block), BlockType.CODE)
+
+    def test_quote_block(self):
+        block = "> This is a quote\n> spanning multiple lines"
+        self.assertEqual(block_to_block_type(block), BlockType.QUOTE)
+
+        invalid_block = "This is not > a valid quote"
+        self.assertNotEqual(block_to_block_type(invalid_block), BlockType.QUOTE)
+
+    def test_unordered_list(self):
+        block = "- Item 1\n- Item 2\n- Item 3"
+        self.assertEqual(block_to_block_type(block), BlockType.UNORDERED_LIST)
+
+        invalid_block = "* Not valid\n- Valid?"
+        self.assertNotEqual(block_to_block_type(invalid_block), BlockType.UNORDERED_LIST)
+
+    def test_ordered_list(self):
+        block = "1. First\n2. Second\n3. Third"
+        self.assertEqual(block_to_block_type(block), BlockType.ORDERED_LIST)
+
+        out_of_order_block = "1. First\n3. Third\n2. Second"
+        self.assertNotEqual(block_to_block_type(out_of_order_block), BlockType.ORDERED_LIST)
+
+        malformed_block = "1. First\n2.Second (missing space)"
+        self.assertNotEqual(block_to_block_type(malformed_block), BlockType.ORDERED_LIST)
+
+    def test_paragraph(self):
+        block = "This is a normal paragraph.\nIt has multiple lines,\nbut no special formatting."
+        self.assertEqual(block_to_block_type(block), BlockType.PARAGRAPH)
+
+        # A single line that's just text
+        self.assertEqual(block_to_block_type("Just some text."), BlockType.PARAGRAPH)
+
+
+if __name__ == "__main__":
+    unittest.main()
