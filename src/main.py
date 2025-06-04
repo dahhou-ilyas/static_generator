@@ -11,7 +11,11 @@ def copies_all_the_contents(source,dest):
     source = os.path.join(os.getcwd(), source.strip("/"))
     dest = os.path.join(os.getcwd(), dest.strip("/"))
 
-    vider_dossier(dest)
+    if not os.path.exists(dest):
+        os.makedirs(dest)
+    else:
+        vider_dossier(dest)
+  
 
     for item in os.listdir(source):
         src_item = os.path.join(source, item)
