@@ -36,9 +36,8 @@ def block_to_block_type(block:str):
     
 
 def extract_title(markdown):
-    def extract_title(markdown):
-        lines = markdown.splitlines()
-        for line in lines:
-            if line.startswith('# '):  # Check for H1 header (starts with a single # followed by space)
-                return line[2:].strip()  # Strip the # and any leading/trailing whitespace
-        raise ValueError("No H1 header found in the markdown")
+    lines = markdown.splitlines()
+    for line in lines:
+        if line.startswith('# '):  # Check for H1 header (starts with a single # followed by space)
+            return line[2:].strip()  # Strip the # and any leading/trailing whitespace
+    raise ValueError("No H1 header found in the markdown")

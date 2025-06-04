@@ -2,9 +2,13 @@ from textnode import TextNode,TextType
 from split_dilemeter import markdown_to_html_node
 import os
 import shutil
+from block_process import extract_title
+
 
 def main():
     copies_all_the_contents("static","public")
+
+    generate_page("content/index.md","template.html","public/index.html")
 
 
 def copies_all_the_contents(source,dest):
@@ -36,7 +40,29 @@ def vider_dossier(dossier):
 
 
 def generate_page(from_path, template_path, dest_path):
-    pass
+    print(f"Generating page from {from_path} to {dest_path} using {template_path}")
+
+    #lire les ficher source et template html
+    with open(from_path, 'r') as filemd:
+        md_contenu = filemd.read()
+    with open(template_path, 'r') as htmlfile:
+        html_contenu = htmlfile.read()
+    
+    # transformer le markdow en arbre html (nodes hmtl)
+    html_node=markdown_to_html_node(md_contenu)
+    # transformer ces node sous forme de string
+    html_string = html_node.to_html()
+
+    #extract header from md_contenue
+    title = extract_title(md_contenu)
+
+    html_contenu.replace("{{ Title }}",title)
+
+    html_contenu.replace("{{ Content }}",html_string)
+
+    with open(dest_path,"w") as html_final:
+        html_final.write(html_contenu)
+
 
 
 if __name__ == "__main__":
