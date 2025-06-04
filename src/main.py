@@ -47,6 +47,7 @@ def generate_page(from_path, template_path, dest_path):
         md_contenu = filemd.read()
     with open(template_path, 'r') as htmlfile:
         html_contenu = htmlfile.read()
+
     
     # transformer le markdow en arbre html (nodes hmtl)
     html_node=markdown_to_html_node(md_contenu)
@@ -56,10 +57,11 @@ def generate_page(from_path, template_path, dest_path):
     #extract header from md_contenue
     title = extract_title(md_contenu)
 
-    html_contenu.replace("{{ Title }}",title)
+    html_contenu=html_contenu.replace("{{ Title }}",title)
 
-    html_contenu.replace("{{ Content }}",html_string)
+    html_contenu=html_contenu.replace("{{ Content }}",html_string)
 
+    print(html_contenu)
     with open(dest_path,"w") as html_final:
         html_final.write(html_contenu)
 
