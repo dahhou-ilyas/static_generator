@@ -33,5 +33,11 @@ def vider_dossier(dossier):
         elif os.path.isdir(chemin_complet):
             shutil.rmtree(chemin_complet)
 
+
+
+def generate_page(from_path, template_path, dest_path):
+    pass
+
+
 if __name__ == "__main__":
     main()
