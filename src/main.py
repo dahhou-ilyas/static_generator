@@ -8,7 +8,7 @@ from block_process import extract_title
 def main():
     copies_all_the_contents("static","public")
 
-    generate_page("content/index.md","template.html","public/index.html")
+    generate_pages_recursive("content","template.html","public")
 
 
 def copies_all_the_contents(source,dest):
@@ -32,10 +32,13 @@ def copies_all_the_contents(source,dest):
 def vider_dossier(dossier):
     for nom in os.listdir(dossier):
         chemin_complet = os.path.join(dossier, nom)
-        if os.path.isfile(chemin_complet) or os.path.islink(chemin_complet):
-            os.remove(chemin_complet)
-        elif os.path.isdir(chemin_complet):
-            shutil.rmtree(chemin_complet)
+        try:
+            if os.path.isfile(chemin_complet) or os.path.islink(chemin_complet):
+                os.unlink(chemin_complet)
+            elif os.path.isdir(chemin_complet):
+                shutil.rmtree(chemin_complet)
+        except Exception as e:
+            print(f"Erreur lors de la suppression de {chemin_complet}: {e}")
 
 
 
@@ -61,13 +64,20 @@ def generate_page(from_path, template_path, dest_path):
 
     html_contenu=html_contenu.replace("{{ Content }}",html_string)
 
-    print(html_contenu)
+    os.makedirs(os.path.dirname(dest_path), exist_ok=True)
+
     with open(dest_path,"w") as html_final:
         html_final.write(html_contenu)
 
 
 
 def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
+
+    for root,dirs,files in os.walk(dir_path_content):
+        for name in files:
+            if name.endswith(".md"):
+                print(root.replace(dir_path_content,dest_dir_path))
+                generate_page(os.path.join(root, name),template_path,os.path.join(root.replace("content",dest_dir_path), name.replace(".md",".html")))
     pass
 if __name__ == "__main__":
     main()
