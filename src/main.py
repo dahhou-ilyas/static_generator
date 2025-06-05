@@ -1,17 +1,16 @@
-from textnode import TextNode,TextType
-from split_dilemeter import markdown_to_html_node
+import sys
 import os
 import shutil
+from textnode import TextNode, TextType
+from split_dilemeter import markdown_to_html_node
 from block_process import extract_title
 
-
 def main():
-    copies_all_the_contents("static","public")
+    basepath = sys.argv[1] if len(sys.argv) > 1 else "/"
+    copies_all_the_contents("static", "docs")
+    generate_pages_recursive("content", "template.html", "docs", basepath)
 
-    generate_pages_recursive("content","template.html","public")
-
-
-def copies_all_the_contents(source,dest):
+def copies_all_the_contents(source, dest):
     source = os.path.join(os.getcwd(), source.strip("/"))
     dest = os.path.join(os.getcwd(), dest.strip("/"))
 
@@ -19,7 +18,6 @@ def copies_all_the_contents(source,dest):
         os.makedirs(dest)
     else:
         vider_dossier(dest)
-  
 
     for item in os.listdir(source):
         src_item = os.path.join(source, item)
@@ -40,44 +38,36 @@ def vider_dossier(dossier):
         except Exception as e:
             print(f"Erreur lors de la suppression de {chemin_complet}: {e}")
 
-
-
-def generate_page(from_path, template_path, dest_path):
+def generate_page(from_path, template_path, dest_path, basepath):
     print(f"Generating page from {from_path} to {dest_path} using {template_path}")
 
-    #lire les ficher source et template html
     with open(from_path, 'r') as filemd:
         md_contenu = filemd.read()
     with open(template_path, 'r') as htmlfile:
         html_contenu = htmlfile.read()
 
-    
-    # transformer le markdow en arbre html (nodes hmtl)
-    html_node=markdown_to_html_node(md_contenu)
-    # transformer ces node sous forme de string
+    html_node = markdown_to_html_node(md_contenu)
     html_string = html_node.to_html()
-
-    #extract header from md_contenue
     title = extract_title(md_contenu)
 
-    html_contenu=html_contenu.replace("{{ Title }}",title)
+    html_contenu = html_contenu.replace("{{ Title }}", title)
+    html_contenu = html_contenu.replace("{{ Content }}", html_string)
 
-    html_contenu=html_contenu.replace("{{ Content }}",html_string)
+    html_contenu = html_contenu.replace('href="/','href="' + basepath)
+    html_contenu = html_contenu.replace('src="/','src="' + basepath)
 
     os.makedirs(os.path.dirname(dest_path), exist_ok=True)
-
-    with open(dest_path,"w") as html_final:
+    with open(dest_path, "w") as html_final:
         html_final.write(html_contenu)
 
-
-
-def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
-
-    for root,dirs,files in os.walk(dir_path_content):
+def generate_pages_recursive(dir_path_content, template_path, dest_dir_path, basepath):
+    for root, dirs, files in os.walk(dir_path_content):
         for name in files:
             if name.endswith(".md"):
-                print(root.replace(dir_path_content,dest_dir_path))
-                generate_page(os.path.join(root, name),template_path,os.path.join(root.replace("content",dest_dir_path), name.replace(".md",".html")))
-    pass
+                relative_path = root.replace(dir_path_content, "")
+                dest_dir = os.path.join(dest_dir_path, relative_path.strip("/"))
+                dest_file = os.path.join(dest_dir, name.replace(".md", ".html"))
+                generate_page(os.path.join(root, name), template_path, dest_file, basepath)
+
 if __name__ == "__main__":
     main()
